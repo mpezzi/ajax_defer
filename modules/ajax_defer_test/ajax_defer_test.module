@@ -9,7 +9,9 @@
  * Implements hook_menu().
  */
 function ajax_defer_test_menu() {
+
   $items = array();
+
   $items['ajax_defer/single'] = array(
     'page callback' => 'ajax_defer_test_single',
     'access callback' => TRUE,
@@ -17,13 +19,16 @@ function ajax_defer_test_menu() {
     // @todo: handle includes.
     //'file' => 'ajax_defer_test.pages.inc',
   );
+
   return $items;
+
 }
 
 /**
  * Page callback; Single defer element.
  */
 function ajax_defer_test_single() {
+
   $data = array(
     'items' => array('one', 'two', 'three', 'four'),
   );
@@ -42,18 +47,18 @@ function ajax_defer_test_single() {
     '#type' => 'ol',
     '#items' => $data['items'],
   );
+
   return $build;
+
 }
 
 /**
  * Deferred callback; Single defer element.
  */
 function ajax_defer_test_single_defer($element, $data) {
-  $build = array();
-  $build['single'] = array(
-    '#theme' => 'item_list',
-    '#type' => 'ul',
-    '#items' => $data['items'],
-  );
-  return $build;
+
+  $element['content']['#type'] = 'ul';
+
+  return $element;
+
 }
