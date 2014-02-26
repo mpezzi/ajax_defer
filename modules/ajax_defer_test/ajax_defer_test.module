@@ -24,21 +24,23 @@ function ajax_defer_test_menu() {
  * Page callback; Single defer element.
  */
 function ajax_defer_test_single() {
+  $data = array(
+    'items' => array('one', 'two', 'three', 'four'),
+  );
+
   $build = array();
   $build['single'] = array(
     '#type' => 'ajax_defer',
     '#ajax_defer' => array(
       // @todo: handle includes.
       'callback' => 'ajax_defer_test_single_defer',
-      'data' => array(
-        'items' => array('one', 'two', 'three', 'four'),
-      ),
+      'data' => $data,
     ),
   );
   $build['single']['content'] = array(
     '#theme' => 'item_list',
     '#type' => 'ol',
-    '#items' => array('one', 'two', 'three', 'four'),
+    '#items' => $data['items'],
   );
   return $build;
 }

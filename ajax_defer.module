@@ -128,6 +128,9 @@ function ajax_defer_ajax_callback($instances) {
     $element = ajax_defer_get_instance($instance);
     $build = call_user_func_array($element['#ajax_defer']['callback'], array($element, $element['#ajax_defer']['data']));
     $commands[] = ajax_command_replace('#' . $element['#id'], drupal_render($build));
+
+    // Clear out this instance.
+    ajax_defer_clear_instance($instance);
   }
 
   ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
@@ -146,6 +149,13 @@ function ajax_defer_set_instance($instance, $data) {
  */
 function ajax_defer_get_instance($instance) {
   return isset($_SESSION['ajax_defer'][$instance]) ? $_SESSION['ajax_defer'][$instance] : FALSE;
+}
+
+/**
+ * Clear an instance.
+ */
+function ajax_defer_clear_instance($instance) {
+  unset($_SESSION['ajax_defer'][$instance]);
 }
 
 /**
