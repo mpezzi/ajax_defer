@@ -235,22 +235,10 @@ function ajax_defer_unrender_children(&$element) {
 }
 
 /**
- * Returns HTML for an ajax defer element.
- */
-function theme_ajax_defer(&$variables) {
-
-  $element = &$variables['element'];
-
-  $variables['attributes']['id'] = $element['#id'];
-  $variables['attributes']['class'][] = 'ajax-defer-instance';
-  $variables['attributes']['data-instance'] = $element['#ajax_defer']['instance'];
-
-  return '<div' . drupal_attributes($variables['attributes']) . '>' . $element['#children'] . '</div>';
-
-}
-
-/**
  * Returns an instance manager.
+ *
+ * @return AjaxDeferInstanceInterface object
+ *
  */
 function ajax_defer_instance_manager() {
 
@@ -262,5 +250,26 @@ function ajax_defer_instance_manager() {
   }
 
   return $manager;
+
+}
+
+/**
+ * Returns HTML for an ajax defer element.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *   - attributes: The attributes applied to the element.
+ *
+ */
+function theme_ajax_defer(&$variables) {
+
+  $element = &$variables['element'];
+
+  $variables['attributes']['id'] = $element['#id'];
+  $variables['attributes']['class'][] = 'ajax-defer-instance';
+  $variables['attributes']['data-instance'] = $element['#ajax_defer']['instance'];
+
+  return '<div' . drupal_attributes($variables['attributes']) . '>' . $element['#children'] . '</div>';
 
 }
