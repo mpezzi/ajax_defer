@@ -5,11 +5,13 @@
  */
 Drupal.behaviors.AjaxDeferInstance = {
   attach: function (context, settings) {
-    $('body', context).once('ajax-defer-instance', function(){
+    $('.ajax-defer-instance', context).once('ajax-defer-instance', function(){
+
       var instances = Drupal.settings.ajax_defer.instances || {}, callbacks = {};
 
+      // Collect all instances for each defined path.
       for (i in instances) {
-        if ($('[data-instance="' + i + '"]', context).length > 0) {
+        if ($('.ajax-defer-instance[data-instance="' + i + '"]', context).length > 0) {
           if (typeof callbacks[instances[i].path] == 'undefined') {
             callbacks[instances[i].path] = [];
           }
@@ -18,6 +20,7 @@ Drupal.behaviors.AjaxDeferInstance = {
       }
 
       // @todo: Provide ability to group instances?
+      // Fire off each ajax callback.
       for (path in callbacks) {
         Drupal.AjaxDefer.ajax_url(path + '/' + callbacks[path].join('-'), 2000, true);
       }

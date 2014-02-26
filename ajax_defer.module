@@ -242,6 +242,7 @@ function theme_ajax_defer(&$variables) {
   $element = &$variables['element'];
 
   $variables['attributes']['id'] = $element['#id'];
+  $variables['attributes']['class'][] = 'ajax-defer-instance';
   $variables['attributes']['data-instance'] = $element['#ajax_defer']['instance'];
 
   return '<div' . drupal_attributes($variables['attributes']) . '>' . $element['#children'] . '</div>';
