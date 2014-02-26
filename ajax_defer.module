@@ -12,8 +12,8 @@ define('AJAX_DEFER_VERSION', '1.0');
  */
 function ajax_defer_init() {
 
-  //$expire = variable_get('ajax_defer_session_expire', 3600);
-  //ajax_defer_instance_manager()->clearExpired($expire);
+  $expire = variable_get('ajax_defer_session_expire', 3600);
+  ajax_defer_instance_manager()->clearExpired($expire);
 
 }
 

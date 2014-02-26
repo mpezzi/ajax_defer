@@ -18,7 +18,6 @@ Drupal.behaviors.AjaxDeferInstance = {
       }
 
       for (path in callbacks) {
-        console.log(path + '/' + callbacks[path].join('-'));
         Drupal.AjaxDefer.ajax_url(path + '/' + callbacks[path].join('-'), 2000, true);
       }
 
