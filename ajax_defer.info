@@ -1,0 +1,4 @@
+name = Ajax defer
+description = Provides functionality to defer loading of render elements.
+package = Other
+core = 7.x

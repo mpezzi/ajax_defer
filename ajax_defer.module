@@ -1,0 +1,162 @@
+<?php
+
+/**
+ * @file
+ * Provides functionality to defer loading of render elements.
+ */
+
+define('AJAX_DEFER_VERSION', '1.0');
+
+/**
+ * Implements hook_menu().
+ */
+function ajax_defer_menu() {
+  $items = array();
+  $items['system/ajax_defer/%'] = array(
+    'page callback' => 'ajax_defer_ajax_callback',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ajax_defer_theme() {
+  $items = array();
+  $items['ajax_defer'] = array(
+    'render element' => 'element',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_library().
+ */
+function ajax_defer_library() {
+  $items = array();
+  $items['ajax_defer'] = array(
+    'title' => 'Ajax Defer',
+    'version' => AJAX_DEFER_VERSION,
+    'js' => array(
+      drupal_get_path('module', 'ajax_defer') . '/js/ajax_defer.js' => array('group' => JS_LIBRARY, 'weight' => 3),
+    ),
+    'dependencies' => array(
+      array('system', 'drupal.ajax'),
+    ),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function ajax_defer_element_info() {
+  $items = array();
+  $items['ajax_defer'] = array(
+    '#ajax_defer' => array(),
+    '#pre_render' => array('ajax_defer_pre_render'),
+    '#post_render' => array('ajax_defer_post_render'),
+    '#theme_wrappers' => array('ajax_defer'),
+  );
+  return $items;
+}
+
+/**
+ * Pre render callback;
+ */
+function ajax_defer_pre_render($elements) {
+  if (!empty($elements['#ajax_defer']['processed'])) {
+    return $elements;
+  }
+
+  $elements['#ajax_defer']['processed'] = FALSE;
+
+  if (!empty($elements['#ajax_defer']['callback']) && function_exists($elements['#ajax_defer']['callback'])) {
+    if (empty($elements['#ajax_defer']['instance'])) {
+      $elements['#ajax_defer']['instance'] = md5(drupal_random_bytes(16));
+    }
+
+    if (empty($elements['#ajax_defer']['path'])) {
+      $elements['#ajax_defer']['path'] = 'system/ajax_defer';
+    }
+
+    if (empty($elements['#ajax_defer']['data'])) {
+      $elements['#ajax_defer']['data'] = array();
+    }
+
+    if (empty($elements['#id'])) {
+      $elements['#id'] = drupal_html_id('ajax-defer-instance');
+    }
+
+    $settings = array();
+    $settings['ajax_defer']['instances'][$elements['#ajax_defer']['instance']] = array(
+      'path' => url($elements['#ajax_defer']['path']),
+    );
+
+    $elements['#attached']['library'][] = array('ajax_defer', 'ajax_defer');
+    $elements['#attached']['js'][] = array('type' => 'setting', 'data' => $settings);
+
+    $elements['#ajax_defer']['processed'] = TRUE;
+  }
+
+  return $elements;
+}
+
+/**
+ * Post render callback;
+ */
+function ajax_defer_post_render($content, $element) {
+  if (!$element['#ajax_defer']['processed']) {
+    return $content;
+  }
+
+  ajax_defer_set_instance($element['#ajax_defer']['instance'], $element);
+
+  return $content;
+}
+
+/**
+ * Page callback; Returns ajax commands for instances.
+ */
+function ajax_defer_ajax_callback($instances) {
+  $commands[] = array();
+
+  foreach (explode('-', $instances) as $instance) {
+    $element = ajax_defer_get_instance($instance);
+    $build = call_user_func_array($element['#ajax_defer']['callback'], array($element, $element['#ajax_defer']['data']));
+    $commands[] = ajax_command_replace('#' . $element['#id'], drupal_render($build));
+  }
+
+  ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  exit;
+}
+
+/**
+ * Sets an instance.
+ */
+function ajax_defer_set_instance($instance, $data) {
+  $_SESSION['ajax_defer'][$instance] = $data;
+}
+
+/**
+ * Gets an instance.
+ */
+function ajax_defer_get_instance($instance) {
+  return isset($_SESSION['ajax_defer'][$instance]) ? $_SESSION['ajax_defer'][$instance] : FALSE;
+}
+
+/**
+ * Returns HTML for an ajax defer element.
+ */
+function theme_ajax_defer(&$variables) {
+  $element = &$variables['element'];
+
+  $variables['attributes']['id'] = $element['#id'];
+  $variables['attributes']['data-instance'] = $element['#ajax_defer']['instance'];
+
+  return '<div' . drupal_attributes($variables['attributes']) . '>' . $element['#children'] . '</div>';
+}
+

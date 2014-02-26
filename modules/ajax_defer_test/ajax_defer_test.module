@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * @file
+ * Provides tests for ajax_defer.module
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ajax_defer_test_menu() {
+  $items = array();
+  $items['ajax_defer/single'] = array(
+    'page callback' => 'ajax_defer_test_single',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    // @todo: handle includes.
+    //'file' => 'ajax_defer_test.pages.inc',
+  );
+  return $items;
+}
+
+/**
+ * Page callback; Single defer element.
+ */
+function ajax_defer_test_single() {
+  $build = array();
+  $build['single'] = array(
+    '#type' => 'ajax_defer',
+    '#ajax_defer' => array(
+      // @todo: handle includes.
+      'callback' => 'ajax_defer_test_single_defer',
+      'data' => array(
+        'items' => array('one', 'two', 'three', 'four'),
+      ),
+    ),
+  );
+  $build['single']['content'] = array(
+    '#theme' => 'item_list',
+    '#type' => 'ol',
+    '#items' => array('one', 'two', 'three', 'four'),
+  );
+  return $build;
+}
+
+/**
+ * Deferred callback; Single defer element.
+ */
+function ajax_defer_test_single_defer($element, $data) {
+  $build = array();
+  $build['single'] = array(
+    '#theme' => 'item_list',
+    '#type' => 'ul',
+    '#items' => $data['items'],
+  );
+  return $build;
+}

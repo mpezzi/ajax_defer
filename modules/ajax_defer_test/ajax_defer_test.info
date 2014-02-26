@@ -1,0 +1,7 @@
+name = Ajax Defer Test
+description = Provides tests for ajax_defer.module
+core = 7.x
+package = Other
+hidden = TRUE
+
+dependencies[] = ajax_defer
