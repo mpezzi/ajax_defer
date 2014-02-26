@@ -17,6 +17,7 @@ Drupal.behaviors.AjaxDeferInstance = {
         }
       }
 
+      // @todo: Provide ability to group instances?
       for (path in callbacks) {
         Drupal.AjaxDefer.ajax_url(path + '/' + callbacks[path].join('-'), 2000, true);
       }

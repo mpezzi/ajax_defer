@@ -9,5 +9,7 @@
  * Implements hook_uninstall().
  */
 function ajax_defer_uninstall() {
-  variable_del('ajax_defer_session_expire');
+
+  variable_del('ajax_defer_instance_expire');
+
 }

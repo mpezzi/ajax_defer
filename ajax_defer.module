@@ -12,7 +12,8 @@ define('AJAX_DEFER_VERSION', '1.0');
  */
 function ajax_defer_init() {
 
-  $expire = variable_get('ajax_defer_session_expire', 3600);
+  // Remove any expired instances.
+  $expire = variable_get('ajax_defer_instance_expire', 3600);
   ajax_defer_instance_manager()->clearExpired($expire);
 
 }
@@ -80,10 +81,10 @@ function ajax_defer_element_info() {
   $items = array();
 
   $items['ajax_defer'] = array(
+    '#theme_wrappers' => array('ajax_defer'),
     '#ajax_defer' => array(),
     '#pre_render' => array('ajax_defer_pre_render'),
     '#post_render' => array('ajax_defer_post_render'),
-    '#theme_wrappers' => array('ajax_defer'),
   );
 
   return $items;
@@ -101,24 +102,30 @@ function ajax_defer_pre_render($elements) {
 
   $elements['#ajax_defer']['processed'] = FALSE;
 
+  // If callback exists set up the instance.
   if (!empty($elements['#ajax_defer']['callback']) && function_exists($elements['#ajax_defer']['callback'])) {
+
+    // Set default instance id.
     if (empty($elements['#ajax_defer']['instance'])) {
       $elements['#ajax_defer']['instance'] = md5(drupal_random_bytes(16));
     }
 
+    // Set default callback path.
     if (empty($elements['#ajax_defer']['path'])) {
       $elements['#ajax_defer']['path'] = 'system/ajax_defer';
     }
 
+    // Set default data.
     if (empty($elements['#ajax_defer']['data'])) {
       $elements['#ajax_defer']['data'] = array();
     }
 
+    // Set default id.
     if (empty($elements['#id'])) {
       $elements['#id'] = drupal_html_id('ajax-defer-instance');
     }
-    $elements['#ajax_defer']['id'] = $elements['#id'];
 
+    // Create js settings for this instance.
     $settings = array();
     $settings['ajax_defer']['instances'][$elements['#ajax_defer']['instance']] = array(
       'path' => url($elements['#ajax_defer']['path']),
@@ -143,8 +150,10 @@ function ajax_defer_post_render($content, $element) {
     return $content;
   }
 
+  // Remove #printed and #children properties.
   ajax_defer_unrender_children($element);
 
+  // Save the instance of this element.
   $manager = ajax_defer_instance_manager();
   $manager->set($element['#ajax_defer']['instance'], $element);
 
@@ -164,18 +173,28 @@ function ajax_defer_ajax_callback($hashes) {
   $manager  = ajax_defer_instance_manager();
   $commands = array();
 
+  // Go through each hash and get new content that should replace it.
   foreach (explode('-', $hashes) as $id) {
     if ($instance = $manager->get($id)) {
+
+      // Get stored element from instance data.
       $element = $instance->data;
+
+      // Save reference of ajax_defer settings.
       $ajax_defer = $element['#ajax_defer'];
 
+      // Remove ajax_defer properties from the containing element.
       $element['#theme_wrappers'] = array('container');
       $element['#attributes'] = array('id' => $element['#id'] . '-deferred');
       unset($element['#type']);
       unset($element['#ajax_defer']);
 
+      // Fire the callback and return the updated element, replace it using
+      // the ajax_command_replace on the original element id.
       $element_updated = call_user_func_array($ajax_defer['callback'], array($element, $ajax_defer['data']));
       $commands[] = ajax_command_replace('#' . $element['#id'], drupal_render($element_updated));
+
+      // Clear out this instance, it's not needed anymore.
       $manager->clear($id);
     }
   }
@@ -198,6 +217,7 @@ function ajax_defer_ajax_callback($hashes) {
  */
 function ajax_defer_unrender_children(&$element) {
 
+  // Unrender all child elements.
   foreach (element_children($element) as $key) {
     $child = &$element[$key];
     if (is_array($child)) {
@@ -208,6 +228,7 @@ function ajax_defer_unrender_children(&$element) {
     unset($child);
   }
 
+  // Unrender this element.
   unset($element['#printed']);
   unset($element['#children']);
 
@@ -234,6 +255,7 @@ function ajax_defer_instance_manager() {
 
   $manager = &drupal_static(__FUNCTION__, NULL);
 
+  // Create new manager instance.
   if (is_null($manager)) {
     $manager = new AjaxDeferSessionInstanceManager();
   }
