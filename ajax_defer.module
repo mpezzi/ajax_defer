@@ -111,8 +111,8 @@ function ajax_defer_pre_render($elements) {
     }
 
     // Set default callback path.
-    if (empty($elements['#ajax_defer']['path'])) {
-      $elements['#ajax_defer']['path'] = 'system/ajax_defer';
+    if (empty($elements['#ajax_defer']['ajax_path'])) {
+      $elements['#ajax_defer']['ajax_path'] = 'system/ajax_defer';
     }
 
     // Set default data.
@@ -128,7 +128,7 @@ function ajax_defer_pre_render($elements) {
     // Create js settings for this instance.
     $settings = array();
     $settings['ajax_defer']['instances'][$elements['#ajax_defer']['instance']] = array(
-      'path' => url($elements['#ajax_defer']['path']),
+      'path' => url($elements['#ajax_defer']['ajax_path']),
     );
 
     $elements['#attached']['library'][] = array('ajax_defer', 'ajax_defer');
@@ -182,6 +182,17 @@ function ajax_defer_ajax_callback($hashes) {
 
       // Save reference of ajax_defer settings.
       $ajax_defer = $element['#ajax_defer'];
+
+      // Include required files if needed.
+      if (isset($ajax_defer['path']) && isset($ajax_defer['file'])) {
+        $file = DRUPAL_ROOT . '/' . $ajax_defer['path'] . '/' . $ajax_defer['file'];
+      }
+      else if (isset($ajax_defer['module']) && isset($ajax_defer['file'])) {
+        $file = DRUPAL_ROOT . '/' . drupal_get_path('module', $ajax_defer['module']) . '/' . $ajax_defer['file'];
+      }
+      if (isset($file) && is_file($file)) {
+        require_once $file;
+      }
 
       // Remove ajax_defer properties from the containing element.
       $element['#theme_wrappers'] = array('container');
