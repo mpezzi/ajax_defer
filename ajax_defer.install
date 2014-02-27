@@ -10,6 +10,7 @@
  */
 function ajax_defer_uninstall() {
 
+  variable_del('ajax_defer_default_delay');
   variable_del('ajax_defer_instance_expire');
 
 }
