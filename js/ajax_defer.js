@@ -39,26 +39,6 @@ Drupal.behaviors.AjaxDeferInstance = {
 };
 
 /**
- * Provides custom method to trigger ajax response.
- */
-Drupal.ajax.prototype.ajaxDeferTrigger = function() {
-  if (this.ajaxing) {
-    return false;
-  }
-
-  try {
-    $.ajax(this.options);
-  }
-  catch (err) {
-    if (console && console.log) {
-      console.log('An error occurred while attempting to process ' + this.options.url);
-    }
-  }
-
-  return false;
-};
-
-/**
  * Provides Ajax Defer container object.
  */
 Drupal.AjaxDefer = Drupal.AjaxDefer || {};
@@ -67,21 +47,17 @@ Drupal.AjaxDefer = Drupal.AjaxDefer || {};
  * Provides Ajax Defer ajaxTrigger method.
  */
 Drupal.AjaxDefer.ajaxTrigger = function(id, url, delay) {
-
-  Drupal.ajax[id] = new Drupal.ajax(null, $(document.body), {
-    url: url,
-    event: 'onload',
-    keypress: false,
-    prevent: false,
-    progress: 'none'
-  });
-
-  $(document).ready(function(){
-    setTimeout(function(){
-      Drupal.ajax[id].ajaxDeferTrigger();
-    }, delay || 0);
-  });
-
+  setTimeout(function(){
+    var $this = $('<a id="' + id + '" href="' + url + '"></a>');
+    var element_settings = {};
+    if ($this.attr('href')) {
+      element_settings.url = $this.attr('href');
+      element_settings.event = 'click';
+      element_settings.progress = { type: 'none' };
+    }
+    Drupal.ajax[id] = new Drupal.ajax(id, $this, element_settings);
+    $this.trigger('click');
+  }, delay || 0);
 };
 
 })(jQuery);

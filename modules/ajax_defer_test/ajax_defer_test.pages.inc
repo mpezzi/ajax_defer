@@ -33,6 +33,8 @@ function ajax_defer_test_single() {
     '#attributes' => array('class' => array('ajax-defer-test-single')),
   );
 
+  $build['#attached']['js'][] = drupal_get_path('module', 'ajax_defer_test') . '/js/ajax_defer_test.js';
+
   return $build;
 
 }
@@ -45,6 +47,9 @@ function ajax_defer_test_single_defer($element, $data) {
   // Change the ol to a ul!
   $element['content']['#title'] = t('Replaced Title');
   $element['content']['#type'] = 'ul';
+
+  // Test attaching new assets.
+  $element['#attached']['js'][] = drupal_get_path('module', 'ajax_defer_test') . '/js/ajax_defer_test_deferred.js';
 
   return $element;
 
