@@ -12,7 +12,6 @@ function ajax_defer_test_menu() {
 
   $items = array();
 
-  // @todo: handle includes.
   $items['ajax_defer/single'] = array(
     'page callback' => 'ajax_defer_test_single',
     'access callback' => TRUE,
