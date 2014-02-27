@@ -25,9 +25,8 @@ function ajax_defer_menu() {
 
   $items = array();
 
-  $items['system/ajax_defer/%'] = array(
+  $items['system/ajax_defer'] = array(
     'page callback' => 'ajax_defer_ajax_callback',
-    'page arguments' => array(2),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -66,6 +65,7 @@ function ajax_defer_library() {
     ),
     'dependencies' => array(
       array('system', 'drupal.ajax'),
+      array('system', 'jquery.bbq'),
     ),
   );
 
@@ -120,6 +120,16 @@ function ajax_defer_pre_render($elements) {
       $elements['#ajax_defer']['data'] = array();
     }
 
+    // Set default delay.
+    if (empty($elements['#ajax_defer']['delay'])) {
+      $elements['#ajax_defer']['delay'] = variable_get('ajax_defer_default_delay', 2000);
+    }
+
+    // Set default delay.
+    if (empty($elements['#ajax_defer']['group'])) {
+      $elements['#ajax_defer']['group'] = 'no-group';
+    }
+
     // Set default id.
     if (empty($elements['#id'])) {
       $elements['#id'] = drupal_html_id('ajax-defer-instance');
@@ -129,6 +139,8 @@ function ajax_defer_pre_render($elements) {
     $settings = array();
     $settings['ajax_defer']['instances'][$elements['#ajax_defer']['instance']] = array(
       'path' => url($elements['#ajax_defer']['ajax_path']),
+      'delay' => $elements['#ajax_defer']['delay'],
+      'group' => $elements['#ajax_defer']['group'],
     );
 
     $elements['#attached']['library'][] = array('ajax_defer', 'ajax_defer');
@@ -164,17 +176,25 @@ function ajax_defer_post_render($content, $element) {
 /**
  * Page callback; Returns ajax commands for instances.
  *
- * @param string $hashes
- *   A string of hashes, delimited by hyphens.
- *
  */
-function ajax_defer_ajax_callback($hashes) {
+function ajax_defer_ajax_callback() {
 
-  $manager  = ajax_defer_instance_manager();
-  $commands = array();
+  $manager    = ajax_defer_instance_manager();
+  $params     = drupal_get_query_parameters();
+  $commands   = array();
+
+  // Get instances from query parameter.
+  if (isset($params['instances'])) {
+    if (is_array($params['instances'])) {
+      $instances = $params['instances'];
+    }
+    else {
+      $instances = array($params['instances']);
+    }
+  }
 
   // Go through each hash and get new content that should replace it.
-  foreach (explode('-', $hashes) as $id) {
+  foreach ($instances as $id) {
     if ($instance = $manager->get($id)) {
 
       // Get stored element from instance data.
@@ -205,8 +225,9 @@ function ajax_defer_ajax_callback($hashes) {
       $element_updated = call_user_func_array($ajax_defer['callback'], array($element, $ajax_defer['data']));
       $commands[] = ajax_command_replace('#' . $element['#id'], drupal_render($element_updated));
 
+      // @todo: This doesn't really work when you hit the back button in the browser.
       // Clear out this instance, it's not needed anymore.
-      $manager->clear($id);
+      //$manager->clear($id);
     }
   }
 

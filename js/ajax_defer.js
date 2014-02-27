@@ -5,78 +5,83 @@
  */
 Drupal.behaviors.AjaxDeferInstance = {
   attach: function (context, settings) {
-    $('.ajax-defer-instance', context).once('ajax-defer-instance', function(){
+    $('body', context).once('ajax-defer-instance', function(){
 
-      var instances = Drupal.settings.ajax_defer.instances || {}, callbacks = {};
+      var instances = settings.ajax_defer.instances || {}, instance,
+          callbacks = {}, callback, url, id;
 
-      // Collect all instances for each defined path.
+      // Collect required callbacks.
       for (i in instances) {
         if ($('.ajax-defer-instance[data-instance="' + i + '"]', context).length > 0) {
-          if (typeof callbacks[instances[i].path] == 'undefined') {
-            callbacks[instances[i].path] = [];
+          instance = instances[i];
+          if (typeof callbacks[instance.path] == 'undefined') {
+            callbacks[instance.path] = {};
           }
-          callbacks[instances[i].path].push(i);
+          if (typeof callbacks[instance.path][instance.group] == 'undefined') {
+            callbacks[instance.path][instance.group] = { instances: [], delay: 0 };
+          }
+          callbacks[instance.path][instance.group].instances.push(i);
+          callbacks[instance.path][instance.group].delay = instance.delay;
         }
       }
 
-      // @todo: Provide ability to group instances?
-      // Fire off each ajax callback.
+      // Collect all instances for each defined path and group.
       for (path in callbacks) {
-        Drupal.AjaxDefer.ajax_url(path + '/' + callbacks[path].join('-'), 2000, true);
+        for (group in callbacks[path]) {
+          id = callbacks[path][group].instances.join('-');
+          url = $.param.querystring(path, { instances: callbacks[path][group].instances });
+          Drupal.AjaxDefer.ajaxTrigger(id, url, callbacks[path][group].delay);
+        }
       }
 
     });
   }
 };
 
+/**
+ * Provides custom method to trigger ajax response.
+ */
+Drupal.ajax.prototype.ajaxDeferTrigger = function() {
+  if (this.ajaxing) {
+    return false;
+  }
+
+  try {
+    $.ajax(this.options);
+  }
+  catch (err) {
+    if (console && console.log) {
+      console.log('An error occurred while attempting to process ' + this.options.url);
+    }
+  }
+
+  return false;
+};
+
+/**
+ * Provides Ajax Defer container object.
+ */
 Drupal.AjaxDefer = Drupal.AjaxDefer || {};
-Drupal.AjaxDefer.ajax_url = function(url, delay, hide_error) {
-  delay = delay || 0;
-  setTimeout(function () {
-    var element_settings = {};
-    // Execute URL pull and then ajax commands
-    // Create ajax element
-    var $a = $('<a href="' + url + '" class="use-ajax"></a>');
 
-    // Clicked links look better with the throbber than the progress bar.
-    element_settings.progress = { 'type': 'throbber' };
+/**
+ * Provides Ajax Defer ajaxTrigger method.
+ */
+Drupal.AjaxDefer.ajaxTrigger = function(id, url, delay) {
 
-    // For anchor tags, these will go to the target of the anchor rather
-    // than the usual location.
-    if ($a.attr('href')) {
-      element_settings.url = $a.attr('href');
-      element_settings.event = 'click';
-    }
-    var base = $a.attr('id');
-    Drupal.ajax[base] = new Drupal.ajax(base, $a, element_settings);
-    // Override default Drupal error handler
-    if (hide_error) {
-      Drupal.ajax[base].error = function (response, uri) {
-        if (console && console.log) {
-          console.log(Drupal.ajaxError(response, uri));
-        }
-        // Remove the progress element.
-        if (this.progress.element) {
-          $(this.progress.element).remove();
-        }
-        if (this.progress.object) {
-          this.progress.object.stopMonitoring();
-        }
-        // Undo hide.
-        $(this.wrapper).show();
-        // Re-enable the element.
-        $(this.element).removeClass('progress-disabled').removeAttr('disabled');
-        // Reattach behaviors, if they were detached in beforeSerialize().
-        if (this.form) {
-          var settings = response.settings || this.settings || Drupal.settings;
-          Drupal.attachBehaviors(this.form, settings);
-        }
-      };
-    }
+  Drupal.ajax[id] = new Drupal.ajax(null, $(document.body), {
+    url: url,
+    event: 'onload',
+    keypress: false,
+    prevent: false,
+    progress: 'none'
+  });
 
-    // Trigger ajax
-    $a.click();
-  }, delay);
+  $(document).ready(function(){
+    setTimeout(function(){
+      Drupal.ajax[id].ajaxDeferTrigger();
+    }, delay || 0);
+  });
+
 };
 
 })(jQuery);

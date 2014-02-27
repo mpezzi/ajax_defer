@@ -87,6 +87,24 @@ function ajax_defer_test_multi() {
     '#markup' => t('This time (@time) is also awesome!', array('@time' => format_date($data['created']))),
   );
 
+  $build['multi3'] = array(
+    '#type' => 'ajax_defer',
+    '#ajax_defer' => array(
+      'callback' => 'ajax_defer_test_multi3_defer',
+      'data' => $data,
+      // @todo: way to set module automagically?
+      'module' => 'ajax_defer_test',
+      'file' => 'ajax_defer_test.pages.inc',
+      'group' => 'different',
+      'delay' => 5000,
+    ),
+  );
+  $build['multi3']['time3'] = array(
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#markup' => t('This time (@time) is also again awesome!', array('@time' => format_date($data['created']))),
+  );
+
   return $build;
 
 }
@@ -110,6 +128,18 @@ function ajax_defer_test_multi2_defer($element, $data) {
 
   // Change the markup, but keep the same time as the original callback!
   $element['time2']['#markup'] = t('This time (@time) was also awesome!', array('@time' => format_date($data['created'])));
+
+  return $element;
+
+}
+
+/**
+ * Deferred callback; Multi defer element.
+ */
+function ajax_defer_test_multi3_defer($element, $data) {
+
+  // Change the markup, but keep the same time as the original callback!
+  $element['time3']['#markup'] = t('This time (@time) was also again awesome!', array('@time' => format_date($data['created'])));
 
   return $element;
 
