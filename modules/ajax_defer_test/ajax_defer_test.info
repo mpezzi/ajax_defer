@@ -5,3 +5,5 @@ package = Other
 hidden = TRUE
 
 dependencies[] = ajax_defer
+
+files[] = tests/AjaxDeferTest.test

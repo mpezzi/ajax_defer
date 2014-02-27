@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @file
+ * Provides web tests for ajax_defer_test.module
+ */
+
+class AjaxDeferTest extends AJAXTestCase {
+
+  /**
+   * Implements getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Ajax Defer tests',
+      'description' => 'Web tests for the ajax_defer_test module',
+      'group' => 'Ajax Defer',
+    );
+  }
+
+  /**
+   * Implements setUp().
+   */
+  public function setUp() {
+    parent::setUp('ajax_defer_test');
+  }
+
+  /**
+   * Tests the page callbacks.
+   */
+  public function testAjaxDeferPages() {
+    $this->_testAjaxDeferSinglePage();
+  }
+
+  /**
+   * Tests the ajax_defer_test_single() page.
+   */
+  public function _testAjaxDeferSinglePage() {
+    $this->drupalGet('ajax_defer_test/single');
+    $this->assertResponse(200);
+
+    $this->assertRaw('<ol class="ajax-defer-test-single">');
+    $this->assertText('Original Title');
+    $this->assertText('test_one');
+    $this->assertText('test_two');
+    $this->assertText('test_three');
+    $this->assertText('test_four');
+
+    // Do an ajax request for the instance.
+    $ids = array();
+    $instances = array();
+    foreach ($this->xpath("//div[@class=:class]", array(':class' => 'ajax-defer-instance')) as $instance) {
+      $ids[] = (string) $instance['id'];
+      $instances[] = (string) $instance['data-instance'];
+    }
+    $commands = $this->drupalGetAJAX('system/ajax_defer', array('query' => array('instances' => $instances)));
+    $expected = array('command' => 'insert', 'method' => 'replaceWith', 'selector' => '#' . $ids[0]);
+
+    $this->assertCommand($commands, $expected, t('Replace command found in ajax callback.'));
+    $this->assertText('Replaced Title');
+    $this->assertText('test_one');
+    $this->assertText('test_two');
+    $this->assertText('test_three');
+    $this->assertText('test_four');
+  }
+
+}

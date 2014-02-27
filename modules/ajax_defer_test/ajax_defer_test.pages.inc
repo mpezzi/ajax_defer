@@ -11,7 +11,7 @@
 function ajax_defer_test_single() {
 
   $data = array(
-    'items' => array('one', 'two', 'three', 'four'),
+    'items' => array('test_one', 'test_two', 'test_three', 'test_four'),
   );
 
   $build = array();
@@ -28,7 +28,9 @@ function ajax_defer_test_single() {
   $build['single']['content'] = array(
     '#theme' => 'item_list',
     '#type' => 'ol',
+    '#title' => t('Original Title'),
     '#items' => $data['items'],
+    '#attributes' => array('class' => array('ajax-defer-test-single')),
   );
 
   return $build;
@@ -41,6 +43,7 @@ function ajax_defer_test_single() {
 function ajax_defer_test_single_defer($element, $data) {
 
   // Change the ol to a ul!
+  $element['content']['#title'] = t('Replaced Title');
   $element['content']['#type'] = 'ul';
 
   return $element;
