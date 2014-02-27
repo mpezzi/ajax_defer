@@ -60,7 +60,7 @@ class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterfa
   }
 
   /**
-   * @copydoc AjaxDeferInstanceManagerInterface::clear()
+   * @copydoc AjaxDeferInstanceManagerInterface::clearExpired()
    *
    */
   public function clearExpired($expire = NULL) {

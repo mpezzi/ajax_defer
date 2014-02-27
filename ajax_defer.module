@@ -92,7 +92,7 @@ function ajax_defer_element_info() {
 }
 
 /**
- * Pre render callback;
+ * Pre render callback; Apply js settings for instance.
  */
 function ajax_defer_pre_render($elements) {
 
@@ -154,7 +154,7 @@ function ajax_defer_pre_render($elements) {
 }
 
 /**
- * Post render callback;
+ * Post render callback; Save the element to an instance.
  */
 function ajax_defer_post_render($content, $element) {
 
