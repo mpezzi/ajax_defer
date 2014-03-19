@@ -74,7 +74,7 @@ class AjaxDeferCacheStorage implements AjaxDeferStorageInterface {
    *
    */
   public function expire() {
-    cache_clear_all($this->getCacheId(), $this->bin, TRUE);
+    cache_clear_all($this->key, $this->bin, TRUE);
   }
 
   /**
