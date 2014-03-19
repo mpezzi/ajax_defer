@@ -3,5 +3,5 @@ description = Provides functionality to defer loading of render elements.
 package = Other
 core = 7.x
 
-files[] = includes/AjaxDeferInstanceManagerInterface.inc
-files[] = includes/AjaxDeferSessionInstanceManager.inc
+files[] = includes/AjaxDeferStorageInterface.inc
+files[] = includes/AjaxDeferSessionStorage.inc

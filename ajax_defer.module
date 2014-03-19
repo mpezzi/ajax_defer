@@ -13,8 +13,8 @@ define('AJAX_DEFER_VERSION', '1.0');
 function ajax_defer_init() {
 
   // Remove any expired instances.
-  $expire = variable_get('ajax_defer_instance_expire', 3600);
-  ajax_defer_instance_manager()->clearExpired($expire);
+  $expire = variable_get('ajax_defer_storage_expire', 3600);
+  ajax_defer_get_storage()->clearExpired($expire);
 
 }
 
@@ -25,7 +25,7 @@ function ajax_defer_menu() {
 
   $items = array();
 
-  $items['system/ajax_defer'] = array(
+  $items['system/ajax-defer'] = array(
     'page callback' => 'ajax_defer_ajax_callback',
     'delivery callback' => 'ajax_deliver',
     'access callback' => TRUE,
@@ -113,7 +113,7 @@ function ajax_defer_pre_render($elements) {
 
     // Set default callback path.
     if (empty($elements['#ajax_defer']['ajax_path'])) {
-      $elements['#ajax_defer']['ajax_path'] = 'system/ajax_defer';
+      $elements['#ajax_defer']['ajax_path'] = 'system/ajax-defer';
     }
 
     // Set default data.
@@ -167,8 +167,8 @@ function ajax_defer_post_render($content, $element) {
   ajax_defer_unrender_children($element);
 
   // Save the instance of this element.
-  $manager = ajax_defer_instance_manager();
-  $manager->set($element['#ajax_defer']['instance'], $element);
+  $storage = ajax_defer_get_storage();
+  $storage->set($element['#ajax_defer']['instance'], $element);
 
   return $content;
 
@@ -180,7 +180,7 @@ function ajax_defer_post_render($content, $element) {
  */
 function ajax_defer_ajax_callback() {
 
-  $manager    = ajax_defer_instance_manager();
+  $storage    = ajax_defer_get_storage();
   $params     = drupal_get_query_parameters();
   $commands   = array();
 
@@ -197,7 +197,7 @@ function ajax_defer_ajax_callback() {
   // Go through each hash and get new content that should replace it.
   if (!empty($instances)) {
     foreach ($instances as $id) {
-      if ($instance = $manager->get($id)) {
+      if ($instance = $storage->get($id)) {
 
         // Get stored element from instance data.
         $element = $instance->data;
@@ -207,10 +207,10 @@ function ajax_defer_ajax_callback() {
 
         // Include required files if needed.
         if (isset($ajax_defer['path']) && isset($ajax_defer['file'])) {
-          $file = DRUPAL_ROOT . '/' . $ajax_defer['path'] . '/' . $ajax_defer['file'];
+          $file = $ajax_defer['path'] . '/' . $ajax_defer['file'];
         }
         else if (isset($ajax_defer['module']) && isset($ajax_defer['file'])) {
-          $file = DRUPAL_ROOT . '/' . drupal_get_path('module', $ajax_defer['module']) . '/' . $ajax_defer['file'];
+          $file = drupal_get_path('module', $ajax_defer['module']) . '/' . $ajax_defer['file'];
         }
         if (isset($file) && is_file($file)) {
           require_once $file;
@@ -229,7 +229,7 @@ function ajax_defer_ajax_callback() {
 
         // @todo: This doesn't really work when you hit the back button in the browser.
         // Clear out this instance, it's not needed anymore.
-        //$manager->clear($id);
+        //$storage->clear($id);
       }
     }
   }
@@ -271,20 +271,20 @@ function ajax_defer_unrender_children(&$element) {
 /**
  * Returns an instance manager.
  *
- * @return AjaxDeferInstanceInterface object
+ * @return AjaxDeferStorageInstance object
  *
  */
-function ajax_defer_instance_manager() {
+function ajax_defer_get_storage() {
 
-  $manager = &drupal_static(__FUNCTION__, NULL);
+  $storage = &drupal_static(__FUNCTION__, NULL);
 
   // Create new manager instance.
-  if (is_null($manager)) {
-    $class = variable_get('ajax_defer_class', 'AjaxDeferSessionInstanceManager');
-    $manager = new $class();
+  if (is_null($storage)) {
+    $class = variable_get('ajax_defer_storage_class', 'AjaxDeferSessionStorage');
+    $storage = new $class();
   }
 
-  return $manager;
+  return $storage;
 
 }
 

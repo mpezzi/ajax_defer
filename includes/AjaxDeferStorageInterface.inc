@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Provides instance interface.
+ * Provides a storage interface for storage defered instances.
  */
 
-interface AjaxDeferInstanceManagerInterface {
+interface AjaxDeferStorageInterface {
 
   /**
    * Retrieves an instance.
@@ -18,15 +18,6 @@ interface AjaxDeferInstanceManagerInterface {
    *
    */
   public function get($id);
-
-  /**
-   * Retrieves all instances.
-   *
-   * @return array
-   *   An array of instances.
-   *
-   */
-  public function getAll();
 
   /**
    * Retrieves an instance.
@@ -54,8 +45,11 @@ interface AjaxDeferInstanceManagerInterface {
   /**
    * Clears expired instances.
    *
+   * @param int $expire
+   *   The expiration time for instances to be cleared.
+   *
    */
-  public function clearExpired();
+  public function clearExpired($expire);
 
 
 }

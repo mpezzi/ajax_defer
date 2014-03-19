@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Provides session instance interface.
+ * Provides a session based storage object for saving defered instances.
  */
 
-class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterface {
+class AjaxDeferSessionStorage implements AjaxDeferStorageInterface {
 
   /**
    * The session key.
@@ -24,7 +24,7 @@ class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterfa
   protected $expire = 3600;
 
   /**
-   * @copydoc AjaxDeferInstanceManagerInterface::get()
+   * @copydoc AjaxDeferStorageInterface::get()
    *
    */
   public function get($id) {
@@ -32,15 +32,7 @@ class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterfa
   }
 
   /**
-   * @copydoc AjaxDeferInstanceManagerInterface::getAll()
-   *
-   */
-  public function getAll() {
-    return isset($_SESSION[$this->session_key]) ? $_SESSION[$this->session_key] : array();
-  }
-
-  /**
-   * @copydoc AjaxDeferInstanceManagerInterface::set()
+   * @copydoc AjaxDeferStorageInterface::set()
    *
    */
   public function set($id, $data) {
@@ -52,7 +44,7 @@ class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterfa
   }
 
   /**
-   * @copydoc AjaxDeferInstanceManagerInterface::clear()
+   * @copydoc AjaxDeferStorageInterface::clear()
    *
    */
   public function clear($id) {
@@ -60,14 +52,17 @@ class AjaxDeferSessionInstanceManager implements AjaxDeferInstanceManagerInterfa
   }
 
   /**
-   * @copydoc AjaxDeferInstanceManagerInterface::clearExpired()
+   * @copydoc AjaxDeferStorageInterface::clearExpired()
    *
    */
   public function clearExpired($expire = NULL) {
     if (!$expire) {
       $expire = $this->expire;
     }
-    foreach ($this->getAll() as $id => $instance) {
+
+    $instances = isset($_SESSION[$this->session_key]) ? $_SESSION[$this->session_key] : array();
+
+    foreach ($instances as $id => $instance) {
       if ($instance->created < REQUEST_TIME - $expire) {
         $this->clear($id);
       }
