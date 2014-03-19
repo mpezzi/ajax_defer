@@ -12,9 +12,9 @@ class AjaxDeferTest extends AJAXTestCase {
    */
   public static function getInfo() {
     return array(
-      'name' => 'Ajax Defer tests',
+      'name' => 'AJAX Defer tests',
       'description' => 'Web tests for the ajax_defer_test module',
-      'group' => 'Ajax Defer',
+      'group' => 'AJAX Defer',
     );
   }
 
@@ -23,6 +23,8 @@ class AjaxDeferTest extends AJAXTestCase {
    */
   public function setUp() {
     parent::setUp('ajax_defer_test');
+    $this->user = $this->drupalCreateUser();
+    $this->drupalLogin($this->user);
   }
 
   /**

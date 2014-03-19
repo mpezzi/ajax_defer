@@ -13,32 +13,28 @@ class AjaxDeferSessionStorage implements AjaxDeferStorageInterface {
    * @var string
    *
    */
-  protected $session_key = 'ajax_defer_instance';
-
-  /**
-   * The expire time.
-   *
-   * @var int
-   *
-   */
-  protected $expire = 3600;
+  protected $key = 'ajax_defer_instance';
 
   /**
    * @copydoc AjaxDeferStorageInterface::get()
    *
    */
   public function get($id) {
-    return isset($_SESSION[$this->session_key][$id]) ? $_SESSION[$this->session_key][$id] : FALSE;
+    if (isset($_SESSION[$this->key][$id])) {
+      return $_SESSION[$this->key][$id]->data;
+    }
+    return FALSE;
   }
 
   /**
    * @copydoc AjaxDeferStorageInterface::set()
    *
    */
-  public function set($id, $data) {
-    $_SESSION[$this->session_key][$id] = (object) array(
+  public function set($id, $data, $expire) {
+    $_SESSION[$this->key][$id] = (object) array(
       'id' => $id,
       'created' => REQUEST_TIME,
+      'expire' => $expire,
       'data' => $data,
     );
   }
@@ -48,22 +44,17 @@ class AjaxDeferSessionStorage implements AjaxDeferStorageInterface {
    *
    */
   public function clear($id) {
-    unset($_SESSION[$this->session_key][$id]);
+    unset($_SESSION[$this->key][$id]);
   }
 
   /**
-   * @copydoc AjaxDeferStorageInterface::clearExpired()
+   * @copydoc AjaxDeferStorageInterface::expire()
    *
    */
-  public function clearExpired($expire = NULL) {
-    if (!$expire) {
-      $expire = $this->expire;
-    }
-
-    $instances = isset($_SESSION[$this->session_key]) ? $_SESSION[$this->session_key] : array();
-
+  public function expire() {
+    $instances = isset($_SESSION[$this->key]) ? $_SESSION[$this->key] : array();
     foreach ($instances as $id => $instance) {
-      if ($instance->created < REQUEST_TIME - $expire) {
+      if (REQUEST_TIME > $instance->expire) {
         $this->clear($id);
       }
     }

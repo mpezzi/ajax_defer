@@ -11,7 +11,7 @@ interface AjaxDeferStorageInterface {
    * Retrieves an instance.
    *
    * @param string $id
-   *   The instance identifier.
+   *   The id of the data to store.
    *
    * @return array
    *   An instance array.
@@ -23,15 +23,17 @@ interface AjaxDeferStorageInterface {
    * Retrieves an instance.
    *
    * @param string $id
-   *   The instance identifier.
+   *   The id of the data to store.
    * @param mixed $data
    *   The instance data.
+   * @param int $expire
+   *   A UNIX timestamp indicating when to store until.
    *
    * @return array
    *   An instance array.
    *
    */
-  public function set($id, $data);
+  public function set($id, $data, $expire);
 
   /**
    * Clears an instance.
@@ -43,13 +45,10 @@ interface AjaxDeferStorageInterface {
   public function clear($id);
 
   /**
-   * Clears expired instances.
-   *
-   * @param int $expire
-   *   The expiration time for instances to be cleared.
+   * Expire instances.
    *
    */
-  public function clearExpired($expire);
+  public function expire();
 
 
 }

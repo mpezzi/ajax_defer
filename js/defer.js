@@ -28,8 +28,10 @@ Drupal.behaviors.AjaxDeferInstance = {
       // Collect all instances for each defined path and group.
       for (path in callbacks) {
         for (group in callbacks[path]) {
+          params = $.deparam.querystring();
+          params.instances = callbacks[path][group].instances;
           id = callbacks[path][group].instances.join('-');
-          url = $.param.querystring(path, { instances: callbacks[path][group].instances });
+          url = $.param.querystring(path, params);
           Drupal.AjaxDefer.ajaxTrigger(id, url, callbacks[path][group].delay);
         }
       }
